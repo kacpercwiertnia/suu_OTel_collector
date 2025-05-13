@@ -304,28 +304,30 @@ if __name__ == "__main__":
     metrics.set_meter_provider(MeterProvider(metric_readers=[reader]))
     meter = metrics.get_meter(__name__)
 
-    def cpu_callback(options):
-        cpu = psutil.cpu_percent(interval=1)
-        print(f"[METRIC] CPU usage: {cpu}%")
+    def process_cpu_callback(options):
+        process = psutil.Process()
+        cpu = process.cpu_percent(interval=None)
+        print(f"[METRIC] Simulator CPU usage: {cpu}%")
         return [metrics.Observation(cpu, {})]
-
-    def mem_callback(options):
-        mem = psutil.virtual_memory().percent
-        print(f"[METRIC] Memory usage: {mem}%")
+    
+    def process_memory_callback(options):
+        process = psutil.Process()
+        mem = process.memory_percent()
+        print(f"[METRIC] Simulator memory usage: {mem}%")
         return [metrics.Observation(mem, {})]
 
     meter.create_observable_gauge(
-        name="system_cpu_usage_percent",
-        callbacks=[cpu_callback],
+        name="simulator_cpu_usage_percent",
+        callbacks=[process_cpu_callback],
         unit="%",
-        description="CPU usage percentage",
+        description="Simulator process CPU usage percentage",
     )
-
+    
     meter.create_observable_gauge(
-        name="system_memory_usage_percent",
-        callbacks=[mem_callback],
+        name="simulator_memory_usage_percent",
+        callbacks=[process_memory_callback],
         unit="%",
-        description="Memory usage percentage",
+        description="Simulator process memory usage percentage",
     )
 
     print("Simulator started...")
