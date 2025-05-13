@@ -63,8 +63,8 @@ otel:
         name: dronhub_backend
   exporter:
     otlp:
-      protocol: http/protobuf
-      endpoint: http://localhost:4318
+      protocol: grpc
+      endpoint: http://localhost:4317
   traces:
     exporter: otlp
   metrics:
