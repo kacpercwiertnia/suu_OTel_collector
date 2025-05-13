@@ -1,0 +1,6 @@
+numpy
+pandas
+pika
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp
