@@ -1,0 +1,72 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.0'
+	id 'io.spring.dependency-management' version '1.1.5'
+	id 'application'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.15.0"
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'com.opencsv:opencsv:5.7.1'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.mariadb.jdbc:mariadb-java-client'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    implementation 'org.testng:testng:7.1.0'
+    runtimeOnly 'com.h2database:h2'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mockito:mockito-core:5.12.0'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+}
+
+tasks.withType(Test) {
+	testLogging {
+		exceptionFormat "full"
+		events "passed", "failed"
+		showStandardStreams false
+	}
+}
+
+jar {
+	setArchiveBaseName('dronhub_backend')
+	version = version
+	manifest {
+		attributes 'Main-Class': 'com.example.backend.BackendApplication'
+	}
+}
+
+application{
+	mainClass = 'com.example.backend.BackendApplication'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

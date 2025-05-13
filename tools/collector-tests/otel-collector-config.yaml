@@ -1,0 +1,29 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317 # Domyślny port gRPC
+      http:
+        endpoint: 0.0.0.0:4318 # Domyślny port HTTP
+
+processors:
+  filter/drop_jvm:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+          - validated.drones.records
+
+exporters:
+   debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp]
+      # processors: [filter/drop_jvm]
+      exporters: [debug]
