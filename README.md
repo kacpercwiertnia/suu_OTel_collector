@@ -21,3 +21,7 @@ The OpenTelemetry (OTel) Collector is a crucial component of the OpenTelemetry o
 - **OpenTelemetry** – generates metrics from both the simulator and the backend.  
 - **OTel Collector** – collects telemetry data (metrics) from applications via OTLP protocol.  
 - **Grafana** – visualizes metrics collected by the OTel Collector.
+
+## Architecture overview
+
+![](./images/architecture.png)
