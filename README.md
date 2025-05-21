@@ -24,10 +24,42 @@ The OpenTelemetry (OTel) Collector is a crucial component of the OpenTelemetry o
 
 ## Architecture overview
 
-The system consists of a drone flight simulator written in Python, which generates flight data and sends it to a RabbitMQ message broker. The Java Spring Boot backend receives this data from RabbitMQ and processes flight information.
-
-In addition to data processing, the simulator sends system resource usage metrics (CPU and memory) to the OpenTelemetry Collector using the OTLP/gRPC protocol. The backend also exports its default OpenTelemetry metrics to the same Collector.
-
-The OpenTelemetry Collector, running in a Docker container, collects all incoming telemetry and forwards it to Grafana for visualization.
-
 ![](./images/architecture.png)
+
+Image presents overall architecture of our application. 
+- Drone-generating simulator is communicating with backend via RabbitMQ Queues informing about new files with drones' positions. 
+- Both backend and simulator sends metrics about resource usages to collector.
+- Python simulator sends data do Collector via HTTPS requests, while backend sends them via gRPC. This shows that OTEL Collector can listen to many communication protocol at once.
+- Collector sends reports in batches via HTTPS to grafana.
+- Grafana collects data, stores them and print pretty cool charts.
+
+## How to setup everything locally
+Prerequisites:
+- Download Grafana and install grafana
+Tu start everything you need 4 terminals:
+
+In terminal 1:
+1. Start RabbitMQ brocker
+`docker run -d --name dronhub_rabbitmq -p 5672:5672 -p 5673:5673 -p 15672:15672 rabbitmq:3-management`
+2. Start Prometheus server
+`docker run -d --name prometheus -p 9090:9090 -v ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml prom/prometheus --config.file=/etc/prometheus/prometheus.yml --web.enable-remote-write-receiver`
+3. Start Grafana server
+On MacOS: download grafana from https://grafana.com/grafana/download
+Extract downloaded file and go inside
+run grafana with: 
+`./bin/grafana server`
+
+In terminal 2:
+
+`sudo docker run -v ./otel/config.yaml:/etc/otelcol-contrib/config.yaml -v "/var/run/docker.sock:/var/run/docker.sock" -p 4317:4317 -p 4318:4318 otel/opentelemetry-collector-contrib:latest`
+
+In terminal 3:
+
+`cd simulator`
+`pip install -r ./requirements.txt`
+`python simulator.py`
+
+In terminal 4:
+
+`cd backend`
+`./gradlew run --args='--spring.profiles.active=develop'`
