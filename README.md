@@ -24,4 +24,10 @@ The OpenTelemetry (OTel) Collector is a crucial component of the OpenTelemetry o
 
 ## Architecture overview
 
+The system consists of a drone flight simulator written in Python, which generates flight data and sends it to a RabbitMQ message broker. The Java Spring Boot backend receives this data from RabbitMQ and processes flight information.
+
+In addition to data processing, the simulator sends system resource usage metrics (CPU and memory) to the OpenTelemetry Collector using the OTLP/gRPC protocol. The backend also exports its default OpenTelemetry metrics to the same Collector.
+
+The OpenTelemetry Collector, running in a Docker container, collects all incoming telemetry and forwards it to Grafana for visualization.
+
 ![](./images/architecture.png)
