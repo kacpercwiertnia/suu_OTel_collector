@@ -1,0 +1,18 @@
+controller:
+  service:
+    type: NodePort
+    nodePorts:
+      http: 30080
+      https: 30443
+      tcp:
+        "4317": 30317
+        "4318": 30318
+  admissionWebhooks:
+    patch:
+      nodeSelector:
+        kubernetes.io/os: linux
+  publishService:
+    enabled: true
+tcp:
+  "4317": "default/my-otel-collector-collector:4317"
+  "4318": "default/my-otel-collector-collector:4318"

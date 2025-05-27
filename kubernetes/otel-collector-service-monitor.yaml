@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: my-otel-collector-monitor
+  namespace: monitoring
+  labels:
+    release: monitoring
+  
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: default.my-otel-collector
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+  - port: prometheus 
+    interval: 15s
+    path: /metrics
