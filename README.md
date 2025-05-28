@@ -35,31 +35,68 @@ Image presents overall architecture of our application.
 
 ## How to setup everything locally
 Prerequisites:
-- Download Grafana and install grafana
-Tu start everything you need 4 terminals:
+- kind
+- kubectl
+- docker
+- helm
 
-In terminal 1:
-1. Start RabbitMQ brocker
-`docker run -d --name dronhub_rabbitmq -p 5672:5672 -p 5673:5673 -p 15672:15672 rabbitmq:3-management`
-2. Start Prometheus server
-`docker run -d --name prometheus -p 9090:9090 -v ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml prom/prometheus --config.file=/etc/prometheus/prometheus.yml --web.enable-remote-write-receiver`
-3. Start Grafana server
-On MacOS: download grafana from https://grafana.com/grafana/download
-Extract downloaded file and go inside
-run grafana with: 
-`./bin/grafana server`
 
-In terminal 2:
+### To start kind cluster: 
 
-`sudo docker run -v ./otel/config.yaml:/etc/otelcol-contrib/config.yaml -v "/var/run/docker.sock:/var/run/docker.sock" -p 4317:4317 -p 4318:4318 otel/opentelemetry-collector-contrib:latest`
+1. ### Start cluster
+```
+kind create cluster --config kubernetes/cluster.yaml
+```
 
-In terminal 3:
+2. ### Set kubectl context
+```
+kubectl cluster-info --context kind-observability-cluster
+```
 
-`cd simulator`
-`pip install -r ./requirements.txt`
-`python simulator.py`
+3. ### Add helm repos
+```
+helm repo add jetstack https://charts.jetstack.io\
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts\
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx\
+helm repo update
+```
 
-In terminal 4:
+4. ### Install Cert-manager
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.crds.yaml
+helm install cert-manager jetstack/cert-manager \\
+  --namespace cert-manager \\
+  --create-namespace \\
+  --version v1.14.5 \\
+  --wait
+```
+Make sure that all pods are in state READY or RUNNING (`kubectl get pods -n cert-manager`)
 
-`cd backend`
-`./gradlew run --args='--spring.profiles.active=develop'`
+
+5. ### Install & Configure ingress controller
+```
+helm install ingress-nginx ingress-nginx/ingress-nginx \\
+  --namespace ingress-nginx \\
+  --create-namespace \\
+  --values kubernetes/ingress-values.yaml \\
+  --wait
+```
+
+6. ### Install Prometheus & Grafana
+```
+helm install monitoring prometheus-community/kube-prometheus-stack \\
+  --namespace monitoring \\
+  --create-namespace \\
+  --values kubernetes/monitoring-values.yaml \\
+  --wait
+```
+
+7. ### Create OTEL Collector
+```
+kubectl apply -f kubernetes/otel-config.yaml -n default
+```
+
+8. ### Create Service Monitor
+```
+kubectl apply -f kubernetes/otel-collector-service-monitor.yaml -n monitoring
+```
