@@ -49,14 +49,6 @@ spec:
         loglevel: debug
 
     service:
-     exporters:
-      prometheus:
-        endpoint: "0.0.0.0:8889" 
-        namespace: "otel"
-      logging:
-        loglevel: debug
-
-    service:
       telemetry:
         metrics:
           address: "0.0.0.0:8890"
